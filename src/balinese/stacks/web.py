@@ -6,11 +6,10 @@ import aws_cdk.aws_ec2 as ec2
 import aws_cdk.aws_ecs as ecs
 import aws_cdk.aws_ecs_patterns as ecs_patterns
 
-from balinese.constants import ABYSSINIAN
 from balinese.stacks.base import BaseStack
 
 
-class AbyssinianStack(BaseStack):
+class WebStack(BaseStack):
     def __init__(
         self,
         scope: Construct,
@@ -18,7 +17,7 @@ class AbyssinianStack(BaseStack):
         vpc: ec2.Vpc,
         **kwargs: Any,
     ) -> None:
-        super().__init__(scope, ABYSSINIAN, **kwargs)
+        super().__init__(scope, "web", **kwargs)
 
         self.vpc = vpc
 
@@ -30,8 +29,8 @@ class AbyssinianStack(BaseStack):
 
         # Create security group for RDS and ALB
         self.sg_backend = self._create_security_group(
-            f"{stack_id}-backend",
-            security_group_id="BackendSecurityGroup",
+            f"{stack_id}-web",
+            security_group_id="WebSecurityGroup",
         )
 
         # Create ECR repository
@@ -65,21 +64,21 @@ class AbyssinianStack(BaseStack):
         self.ecs_service = ecs_patterns.ApplicationLoadBalancedFargateService(
             self,
             "ECSFargateService",
-            cpu=256,
-            memory_limit_mib=512,
+            cpu=512,
+            memory_limit_mib=1024,
             security_groups=[self.sg_backend],
             task_subnets=self._get_vpc_subnets(
                 private=True, vpc_subnets=None
             ),
             cluster=self.ecs_cluster,
-            desired_count=2,
+            desired_count=1,
             enable_ecs_managed_tags=True,
             load_balancer=fargate_service_load_balancer,
             propagate_tags=ecs.PropagatedTagSource.TASK_DEFINITION,
-            service_name=f"{stack_id}-backend-a",
+            service_name=f"{stack_id}-web-a",
             task_image_options=ecs_patterns.ApplicationLoadBalancedTaskImageOptions(
                 image=image,
-                container_port=9050
+                container_port=8050
             ),
         )
-        self.ecs_service.target_group.configure_health_check(path="/ping")
+        self.ecs_service.target_group.configure_health_check(path="/")
