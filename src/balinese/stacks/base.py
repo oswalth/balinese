@@ -40,15 +40,9 @@ class BaseStack(Stack):
         repository_id: str = "ECRRepository",
         image_scan_on_push: bool = True,
     ) -> Repository:
-        if (ecr_repo := Repository.from_repository_name(
+        return Repository(
             self,
-            id=repository_id,
-            repository_name=repository_name
-        )) is None:
-            ecr_repo = Repository(
-                self,
-                repository_id,
-                repository_name=repository_name,
-                image_scan_on_push=image_scan_on_push,
-            )
-        return ecr_repo
+            repository_id,
+            repository_name=repository_name,
+            image_scan_on_push=image_scan_on_push,
+        )
