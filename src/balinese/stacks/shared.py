@@ -9,7 +9,7 @@ class SharedStack(Stack):
     def __init__(
         self, scope: Construct, **kwargs: Any
     ) -> None:
-        super().__init__(scope, "shared", **kwargs)
+        super().__init__(scope, "infra", **kwargs)
 
         stack_id = self.to_string()
 
